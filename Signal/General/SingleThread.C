@@ -14,6 +14,10 @@
 #include "dsp/Input.h"
 #include "dsp/InputBufferingShare.h"
 
+#if HAVE_chime
+#include "dsp/ChimeInput.h"
+#endif
+
 #include "dsp/Scratch.h"
 #include "dsp/MultiFile.h"
 #include "dsp/CommandLineHeader.h"
@@ -630,6 +634,22 @@ dsp::Input* dsp::SingleThread::Config::open (int argc, char** argv)
   }
 
   unsigned nfile = filenames.size();
+  
+  // Special CHIME path: we currently use a special command-line flag -chime-acq
+  if (this->chime_acq) {
+#if HAVE_chime
+    if (nfile != 1) {
+      std::cerr << "If the -chime-acq flag is specified, then a filelist (and only one filelist) should be specified on the command line" << endl;
+      exit (-1);
+    }
+
+    // Note: the ChimeInput constructor will read the list of filenames, but won't spawn disk_reader threads to read files.
+    return new ChimeInput(filenames[0]);
+#else
+    std::cerr << "The chime-acq flag was specified, but dspsr was compiled without the 'chime' backend" << endl;
+    exit (-1);
+#endif
+  }
 
   if (nfile == 0)
   {
