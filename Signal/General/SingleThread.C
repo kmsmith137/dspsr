@@ -639,12 +639,13 @@ dsp::Input* dsp::SingleThread::Config::open (int argc, char** argv)
   if (this->chime_acq) {
 #if HAVE_chime
     if (nfile != 1) {
-      std::cerr << "If the -chime-acq flag is specified, then a filelist (and only one filelist) should be specified on the command line" << endl;
+      std::cerr << "If the -chime-acq flag is specified, then a filelist_filename (and only one filename) should be specified on the command line" << endl;
       exit (-1);
     }
 
-    // Note: the ChimeInput constructor will read the list of filenames, but won't spawn disk_reader threads to read files.
-    return new ChimeInput(filenames[0]);
+    // Note: the ChimeInput constructor will read the list of vdif filenames, but won't spawn disk_reader threads to read the constituent vdif files.
+    string filelist_filename = filenames[0];
+    return new ChimeInput(filelist_filename);
 #else
     std::cerr << "The chime-acq flag was specified, but dspsr was compiled without the 'chime' backend" << endl;
     exit (-1);

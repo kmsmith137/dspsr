@@ -11,10 +11,10 @@
 using namespace std;
 
 
-dsp::ChimeInput::ChimeInput(const std::string &filelist)
+dsp::ChimeInput::ChimeInput(const std::string &filelist_filename)
   : Input("chime")
 {
-  std::cerr << "ChimeInput constructed: " << filelist << "\n";
+  this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filelist_filename);
 }
 
 // Placeholder

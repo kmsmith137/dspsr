@@ -10,19 +10,23 @@
 #define __ChimeInput_h
 
 #include "dsp/Input.h"
+#include <ch_vdif_assembler_dspsr.hpp>
 
 namespace dsp {
 
   class ChimeInput : public Input
   {
   public:
-    ChimeInput(const std::string &filelist);
+    ChimeInput(const std::string &filelist_filename);
     virtual ~ChimeInput();
 
     // We only define the pure virtuals for now
     virtual bool eod();
     virtual void set_eod(bool);
     virtual void load_data(BitSeries *data);
+
+  protected:
+    ch_vdif_assembler::dspsr_handle *assembler_handle;
   };
 
 }
