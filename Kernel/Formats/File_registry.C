@@ -42,6 +42,11 @@ static dsp::File::Register::Enter<dsp::ASPFile> register_asp;
 static dsp::File::Register::Enter<dsp::BCPMFile> register_bcpm;
 #endif
 
+#if HAVE_chime
+#include "dsp/ChimeFile.h"
+static dsp::File::Register::Enter<dsp::ChimeFile> register_chime;
+#endif
+
 #if HAVE_cpsr
 #include "dsp/CPSRFile.h"
 static dsp::File::Register::Enter<dsp::CPSRFile> register_cpsr;
