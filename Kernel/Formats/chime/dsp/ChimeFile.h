@@ -10,6 +10,7 @@
 #define __ChimeFile_h
 
 #include "dsp/File.h"
+#include <ch_vdif_assembler_dspsr.hpp>
 
 namespace dsp {
 
@@ -23,6 +24,7 @@ namespace dsp {
     virtual void open_file(const char* filename);
 
   protected:
+    ch_vdif_assembler::dspsr_handle *assembler_handle;
   };
 
 }

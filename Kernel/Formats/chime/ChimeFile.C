@@ -12,10 +12,16 @@ using namespace std;
 
 dsp::ChimeFile::ChimeFile() : File("CHIME") 
 { 
-  cerr << "ChimeFile constructor called\n";
+  this->assembler_handle = 0;
 }
 
-dsp::ChimeFile::~ChimeFile() { }
+dsp::ChimeFile::~ChimeFile() 
+{ 
+  if (assembler_handle) {
+    delete assembler_handle;
+    assembler_handle = 0;
+  }
+}
 
 bool dsp::ChimeFile::is_valid(const char *filename) const
 {
@@ -25,7 +31,8 @@ bool dsp::ChimeFile::is_valid(const char *filename) const
 
 void dsp::ChimeFile::open_file(const char *filename)
 {
-  cerr << "open_file called: " << filename << endl;
+  this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filename);
+  cerr << "file opened! " << filename <<endl;
   throw runtime_error("BLAH");
 }
 
