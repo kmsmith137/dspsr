@@ -174,6 +174,9 @@ namespace dsp {
     //! external function used to prepare the input each time it is opened
     Functor< void(Input*) > input_prepare;
 
+    // Special command-line flag for running on CHIME data
+    bool chime_acq;
+
     // Input files represent a single continuous observation
     bool force_contiguity;
 

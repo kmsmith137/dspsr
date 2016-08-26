@@ -584,7 +584,7 @@ dsp::SingleThread::Config::Config ()
   can_thread = false;
 
   command_line_header = false;
-
+  chime_acq = false;
   force_contiguity = false;
 
   seek_seconds = 0.0;
@@ -753,6 +753,9 @@ void dsp::SingleThread::Config::add_options (CommandLine::Menu& menu)
 
   arg = menu.add (command_line_header, "header");
   arg->set_help ("command line arguments are header values (not filenames)");
+
+  arg = menu.add (chime_acq, "chime-acq");
+  arg->set_help ("special command-line flag for running on a CHIME acquisition (argument must be a file list)");
 
   arg = menu.add (force_contiguity, "cont");
   arg->set_help ("input files are contiguous (disable check)");
