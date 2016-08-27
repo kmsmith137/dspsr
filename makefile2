@@ -1,0 +1,376 @@
+# An alternate Makefile, to work around my not understanding autoconf!
+# Example usage: 'make -f makefile2' will build dspsr.
+
+# Note: make sure this is in $LD_LIBRARY_PATH
+TEMPO_LIBDIR=/usr/share/tempo2/lib
+
+DSP_INCLUDES=-IKernel/Classes -IKernel/Formats/chime -IKernel/Formats/dada -IKernel/Formats/guppi -ISignal/Pulsar -ISignal/General -ISignal/Statistics -IMore/Plotting -IMore/Plotting
+
+# DSP_INCLUDES should precede system includes
+CFLAGS=-fopenmp -O2 -Wall -pthread -DHAVE_CONFIG_H $(DSP_INCLUDES) -I. -I/usr/local/include -I/home/kmsmith/include
+
+LDFLAGS=-L/home/kmsmith/lib -L$(TEMPO_LIBDIR) 
+
+LIBS = -lpsrmore -lpsrbase -lpsrutil -ltempo2pred 
+LIBS += -lcpgplot -lpgplot -lX11 
+LIBS += -lreadline -ltermcap 
+LIBS += -lfftw3f -lcfitsio
+LIBS += -lgsl -lgslcblas -lgfortran -lquadmath 
+LIBS += -lch_vdif_assembler -lch_frb_io -lhdf5 -lpng
+# LIBS += -Wl,-rpath -Wl,/usr/share/tempo2/lib -Wl,-rpath -Wl,/usr/share/tempo2/lib
+
+
+####################################################################################################
+
+
+ALL_HEADERS = Kernel/Classes/ascii_header.h \
+	Kernel/Classes/debug.h \
+	Kernel/Classes/dsp/ASCIIObservation.h \
+	Kernel/Classes/dsp/BitSeries.h \
+	Kernel/Classes/dsp/BitTable.h \
+	Kernel/Classes/dsp/BitUnpacker.h \
+	Kernel/Classes/dsp/BlockFile.h \
+	Kernel/Classes/dsp/BlockIterator.h \
+	Kernel/Classes/dsp/BufferingPolicy.h \
+	Kernel/Classes/dsp/ChannelOrder.h \
+	Kernel/Classes/dsp/CloneArchive.h \
+	Kernel/Classes/dsp/CommandLineHeader.h \
+	Kernel/Classes/dsp/DADAFile.h \
+	Kernel/Classes/dsp/DataSeries.h \
+	Kernel/Classes/dsp/DataSource.h \
+	Kernel/Classes/dsp/Digitizer.h \
+	Kernel/Classes/dsp/DummyFile.h \
+	Kernel/Classes/dsp/EightBitOne.h \
+	Kernel/Classes/dsp/EightBitUnpacker.h \
+	Kernel/Classes/dsp/ExcisionUnpacker.h \
+	Kernel/Classes/dsp/File.h \
+	Kernel/Classes/dsp/FloatUnpacker.h \
+	Kernel/Classes/dsp/FourBitTwo.h \
+	Kernel/Classes/dsp/FourBitUnpacker.h \
+	Kernel/Classes/dsp/GenericEightBitUnpacker.h \
+	Kernel/Classes/dsp/GenericEightBitUnpackerCUDA.h \
+	Kernel/Classes/dsp/HasInput.h \
+	Kernel/Classes/dsp/HasOutput.h \
+	Kernel/Classes/dsp/HistUnpacker.h \
+	Kernel/Classes/dsp/IOManager.h \
+	Kernel/Classes/dsp/Input.h \
+	Kernel/Classes/dsp/InputBuffering.h \
+	Kernel/Classes/dsp/InputBufferingShare.h \
+	Kernel/Classes/dsp/MPIRoot.h \
+	Kernel/Classes/dsp/MPIServer.h \
+	Kernel/Classes/dsp/MPITrans.h \
+	Kernel/Classes/dsp/Memory.h \
+	Kernel/Classes/dsp/MemoryCUDA.h \
+	Kernel/Classes/dsp/MiniExtension.h \
+	Kernel/Classes/dsp/MiniPlan.h \
+	Kernel/Classes/dsp/MultiFile.h \
+	Kernel/Classes/dsp/Multiplex.h \
+	Kernel/Classes/dsp/NLowLookup.h \
+	Kernel/Classes/dsp/Observation.h \
+	Kernel/Classes/dsp/ObservationChange.h \
+	Kernel/Classes/dsp/ObservationInterface.h \
+	Kernel/Classes/dsp/Operation.h \
+	Kernel/Classes/dsp/OperationThread.h \
+	Kernel/Classes/dsp/OutputArchive.h \
+	Kernel/Classes/dsp/OutputFile.h \
+	Kernel/Classes/dsp/OutputFileShare.h \
+	Kernel/Classes/dsp/PrestoObservation.h \
+	Kernel/Classes/dsp/Reserve.h \
+	Kernel/Classes/dsp/Scratch.h \
+	Kernel/Classes/dsp/Seekable.h \
+	Kernel/Classes/dsp/SignalPath.h \
+	Kernel/Classes/dsp/Sink.h \
+	Kernel/Classes/dsp/StepIterator.h \
+	Kernel/Classes/dsp/SubByteTwoBitCorrection.h \
+	Kernel/Classes/dsp/TestInput.h \
+	Kernel/Classes/dsp/TimeSeries.h \
+	Kernel/Classes/dsp/Transformation.h \
+	Kernel/Classes/dsp/TwoBit1or2.h \
+	Kernel/Classes/dsp/TwoBitCorrection.h \
+	Kernel/Classes/dsp/TwoBitFour.h \
+	Kernel/Classes/dsp/TwoBitLookup.h \
+	Kernel/Classes/dsp/TwoBitMask.h \
+	Kernel/Classes/dsp/TwoBitTable.h \
+	Kernel/Classes/dsp/UniversalInputBuffering.h \
+	Kernel/Classes/dsp/Unpacker.h \
+	Kernel/Classes/dsp/UnpackerIterator.h \
+	Kernel/Classes/dsp/WeightedTimeSeries.h \
+	Kernel/Classes/dsp/dsp.h \
+	Kernel/Classes/dsp/dspExtension.h \
+	Kernel/Classes/dsp/excision_unpack.h \
+	Kernel/Classes/dsp/infodata.h \
+	Kernel/Classes/environ.h \
+	Kernel/Formats/chime/dsp/ChimeFile.h \
+	Kernel/Formats/dada/dsp/DADABuffer.h \
+	Kernel/Formats/guppi/dsp/GUPPIBlockFile.h \
+	Kernel/Formats/guppi/dsp/GUPPIBuffer.h \
+	Kernel/Formats/guppi/dsp/GUPPIFile.h \
+	Kernel/Formats/guppi/dsp/GUPPIFourBit.h \
+	Kernel/Formats/guppi/dsp/GUPPITwoBitCorrection.h \
+	Kernel/Formats/guppi/dsp/GUPPIUnpacker.h \
+	Kernel/Formats/guppi/fitshead.h \
+	Kernel/Formats/guppi/fitshead_utils.h \
+	More/Plotting/dsp/FluxPlot.h \
+	More/Plotting/dsp/FrequencyVsTime.h \
+	More/Plotting/dsp/HistoPlot.h \
+	More/Plotting/dsp/Plot.h \
+	More/Plotting/dsp/PlotFactory.h \
+	Signal/General/CUFFTError.h \
+	Signal/General/cross_detect.h \
+	Signal/General/dsp/ACFilterbank.h \
+	Signal/General/dsp/Accumulator.h \
+	Signal/General/dsp/Apodization.h \
+	Signal/General/dsp/AutoCorrelation.h \
+	Signal/General/dsp/Bandpass.h \
+	Signal/General/dsp/BandpassMonitor.h \
+	Signal/General/dsp/BitStatsPlotter.h \
+	Signal/General/dsp/Buffer.h \
+	Signal/General/dsp/Chomper.h \
+	Signal/General/dsp/Convolution.h \
+	Signal/General/dsp/Dedispersion.h \
+	Signal/General/dsp/DedispersionHistory.h \
+	Signal/General/dsp/DedispersionSampleDelay.h \
+	Signal/General/dsp/Detection.h \
+	Signal/General/dsp/DetectionCUDA.h \
+	Signal/General/dsp/Dump.h \
+	Signal/General/dsp/Example.h \
+	Signal/General/dsp/ExcisionHistoryPlotter.h \
+	Signal/General/dsp/ExcisionStatsPlotter.h \
+	Signal/General/dsp/FScrunch.h \
+	Signal/General/dsp/FScrunchCUDA.h \
+	Signal/General/dsp/FZoom.h \
+	Signal/General/dsp/FZoomCUDA.h \
+	Signal/General/dsp/Filterbank.h \
+	Signal/General/dsp/FilterbankBench.h \
+	Signal/General/dsp/FilterbankCUDA.h \
+	Signal/General/dsp/FilterbankConfig.h \
+	Signal/General/dsp/FilterbankEngine.h \
+	Signal/General/dsp/FourthMoment.h \
+	Signal/General/dsp/GeometricDelay.h \
+	Signal/General/dsp/IncoherentFilterbank.h \
+	Signal/General/dsp/LaunchConfig.h \
+	Signal/General/dsp/LevelHistory.h \
+	Signal/General/dsp/LevelMonitor.h \
+	Signal/General/dsp/LoadToFITS.h \
+	Signal/General/dsp/LoadToFITSN.h \
+	Signal/General/dsp/LoadToFil.h \
+	Signal/General/dsp/LoadToFilN.h \
+	Signal/General/dsp/MultiThread.h \
+	Signal/General/dsp/OptimalFFT.h \
+	Signal/General/dsp/OptimalFilterbank.h \
+	Signal/General/dsp/PScrunch.h \
+	Signal/General/dsp/Pipeline.h \
+	Signal/General/dsp/Plotter.h \
+	Signal/General/dsp/PolnCalibration.h \
+	Signal/General/dsp/PolnReshape.h \
+	Signal/General/dsp/PolnSelect.h \
+	Signal/General/dsp/RFIFilter.h \
+	Signal/General/dsp/RFIZapper.h \
+	Signal/General/dsp/Rescale.h \
+	Signal/General/dsp/Resize.h \
+	Signal/General/dsp/Response.h \
+	Signal/General/dsp/ResponseProduct.h \
+	Signal/General/dsp/SKDetector.h \
+	Signal/General/dsp/SKFilterbank.h \
+	Signal/General/dsp/SKMasker.h \
+	Signal/General/dsp/SKMaskerCUDA.h \
+	Signal/General/dsp/SampleDelay.h \
+	Signal/General/dsp/SampleDelayFunction.h \
+	Signal/General/dsp/Shape.h \
+	Signal/General/dsp/Simultaneous.h \
+	Signal/General/dsp/SingleThread.h \
+	Signal/General/dsp/Stats.h \
+	Signal/General/dsp/Switcher.h \
+	Signal/General/dsp/TFPFilterbank.h \
+	Signal/General/dsp/TScrunch.h \
+	Signal/General/dsp/TScrunchCUDA.h \
+	Signal/General/dsp/TimeOrder.h \
+	Signal/General/dsp/TransferBitSeriesCUDA.h \
+	Signal/General/dsp/TransferCUDA.h \
+	Signal/General/dsp/ZapWeight.h \
+	Signal/General/dsp/ZapWeightCUDA.h \
+	Signal/General/dsp/filterbank_cuda.h \
+	Signal/General/dsp/filterbank_engine.h \
+	Signal/General/dsp/on_host.h \
+	Signal/General/stokes_detect.h \
+	Signal/Pulsar/dsp/Archiver.h \
+	Signal/Pulsar/dsp/CyclicFold.h \
+	Signal/Pulsar/dsp/CyclicFoldEngineCUDA.h \
+	Signal/Pulsar/dsp/Fold.h \
+	Signal/Pulsar/dsp/FoldCUDA.h \
+	Signal/Pulsar/dsp/LoadToFold1.h \
+	Signal/Pulsar/dsp/LoadToFoldConfig.h \
+	Signal/Pulsar/dsp/LoadToFoldN.h \
+	Signal/Pulsar/dsp/PhaseLockedFilterbank.h \
+	Signal/Pulsar/dsp/PhaseSeries.h \
+	Signal/Pulsar/dsp/PhaseSeriesUnloader.h \
+	Signal/Pulsar/dsp/SubFold.h \
+	Signal/Pulsar/dsp/Subint.h \
+	Signal/Pulsar/dsp/TimeDivide.h \
+	Signal/Pulsar/dsp/TransferPhaseSeriesCUDA.h \
+	Signal/Pulsar/dsp/UnloaderShare.h \
+	Signal/Statistics/dsp/MidPoint.h \
+	Signal/Statistics/dsp/Neville.h \
+	Signal/Statistics/dsp/NewtonRaphson.h \
+	Signal/Statistics/dsp/PearsonIV.h \
+	Signal/Statistics/dsp/Romberg.h \
+	Signal/Statistics/dsp/SKLimits.h \
+	Signal/Statistics/dsp/Trapezoid.h \
+	Signal/Statistics/dsp/VolumeIntegral.h \
+	config.h
+
+OBJFILES = Kernel/Classes/ASCIIObservation.o \
+	Kernel/Classes/BitSeries.o \
+	Kernel/Classes/BitTable.o \
+	Kernel/Classes/BitUnpacker.o \
+	Kernel/Classes/BlockFile.o \
+	Kernel/Classes/ChannelOrder.o \
+	Kernel/Classes/CloneArchive.o \
+	Kernel/Classes/CommandLineHeader.o \
+	Kernel/Classes/DADAFile.o \
+	Kernel/Classes/DataSeries.o \
+	Kernel/Classes/Digitizer.o \
+	Kernel/Classes/DummyFile.o \
+	Kernel/Classes/EightBitUnpacker.o \
+	Kernel/Classes/ExcisionUnpacker.o \
+	Kernel/Classes/File.o \
+	Kernel/Classes/FloatUnpacker.o \
+	Kernel/Classes/FourBitUnpacker.o \
+	Kernel/Classes/GenericEightBitUnpacker.o \
+	Kernel/Classes/HistUnpacker.o \
+	Kernel/Classes/IOManager.o \
+	Kernel/Classes/Input.o \
+	Kernel/Classes/InputBuffering.o \
+	Kernel/Classes/InputBufferingShare.o \
+	Kernel/Classes/Memory.o \
+	Kernel/Classes/MultiFile.o \
+	Kernel/Classes/Multiplex.o \
+	Kernel/Classes/NLowLookup.o \
+	Kernel/Classes/Observation.o \
+	Kernel/Classes/ObservationChange.o \
+	Kernel/Classes/ObservationInterface.o \
+	Kernel/Classes/Operation.o \
+	Kernel/Classes/OperationThread.o \
+	Kernel/Classes/OutputFile.o \
+	Kernel/Classes/OutputFileShare.o \
+	Kernel/Classes/PrestoObservation.o \
+	Kernel/Classes/Reserve.o \
+	Kernel/Classes/Scratch.o \
+	Kernel/Classes/Seekable.o \
+	Kernel/Classes/SignalPath.o \
+	Kernel/Classes/SubByteTwoBitCorrection.o \
+	Kernel/Classes/TestInput.o \
+	Kernel/Classes/TimeSeries.o \
+	Kernel/Classes/TwoBit1or2.o \
+	Kernel/Classes/TwoBitCorrection.o \
+	Kernel/Classes/TwoBitFour.o \
+	Kernel/Classes/TwoBitLookup.o \
+	Kernel/Classes/TwoBitTable.o \
+	Kernel/Classes/Unpacker.o \
+	Kernel/Classes/UnpackerIterator.o \
+	Kernel/Classes/Unpacker_create.o \
+	Kernel/Classes/WeightedTimeSeries.o \
+	Kernel/Classes/ascii_header.o \
+	Kernel/Classes/dsp.o \
+	Kernel/Classes/dspExtension.o  
+
+OBJFILES += Kernel/Formats/File_registry.o \
+	Kernel/Formats/Unpacker_registry.o 
+
+OBJFILES += Kernel/Formats/chime/ChimeFile.o
+
+# OBJFILES += Kernel/Formats/guppi/GUPPIBlockFile.o \
+#	Kernel/Formats/guppi/GUPPIFile.o \
+#	Kernel/Formats/guppi/GUPPIFourBit.o \
+#	Kernel/Formats/guppi/GUPPITwoBitCorrection.o \
+#	Kernel/Formats/guppi/GUPPIUnpacker.o \
+#	Kernel/Formats/guppi/fitshead_utils.o \
+#	Kernel/Formats/guppi/hget.o 
+
+OBJFILES += Signal/Pulsar/Archiver.o \
+	Signal/Pulsar/ArchiverExtensions.o \
+	Signal/Pulsar/TimeDivide.o \
+	Signal/Pulsar/Fold.o \
+	Signal/Pulsar/UnloaderShare.o \
+	Signal/Pulsar/LoadToFold1.o \
+	Signal/Pulsar/PhaseLockedFilterbank.o \
+	Signal/Pulsar/LoadToFoldConfig.o \
+	Signal/Pulsar/PhaseSeries.o \
+	Signal/Pulsar/LoadToFoldN.o \
+	Signal/Pulsar/PhaseSeriesUnloader.o \
+	Signal/Pulsar/CyclicFold.o
+
+OBJFILES += Signal/General/optimize_fft.o \
+	Signal/General/cross_detect.o \
+	Signal/General/stokes_detect.o \
+	Signal/General/ACFilterbank.o \
+	Signal/General/TScrunch.o \
+	Signal/General/TimeOrder.o \
+	Signal/General/Apodization.o \
+	Signal/General/AutoCorrelation.o \
+	Signal/General/Filterbank.o \
+	Signal/General/IncoherentFilterbank.o \
+	Signal/General/Bandpass.o \
+	Signal/General/LevelMonitor.o \
+	Signal/General/RFIFilter.o \
+	Signal/General/Chomper.o \
+	Signal/General/Response.o \
+	Signal/General/ResponseProduct.o \
+	Signal/General/Convolution.o \
+	Signal/General/Dedispersion.o \
+	Signal/General/SampleDelay.o \
+	Signal/General/DedispersionHistory.o \
+	Signal/General/Shape.o \
+	Signal/General/DedispersionSampleDelay.o \
+	Signal/General/Detection.o \
+	Signal/General/Rescale.o \
+	Signal/General/PScrunch.o \
+	Signal/General/BandpassMonitor.o \
+	Signal/General/FourthMoment.o \
+	Signal/General/Stats.o \
+	Signal/General/PolnCalibration.o \
+	Signal/General/Dump.o \
+	Signal/General/OptimalFFT.o \
+	Signal/General/FScrunch.o \
+	Signal/General/FilterbankBench.o \
+	Signal/General/OptimalFilterbank.o \
+	Signal/General/FilterbankConfig.o \
+	Signal/General/FZoom.o \
+	Signal/General/GeometricDelay.o \
+	Signal/General/mfilter.o \
+	Signal/General/TFPFilterbank.o \
+	Signal/General/RFIZapper.o \
+	Signal/General/SKFilterbank.o \
+	Signal/General/Resize.o \
+	Signal/General/SKDetector.o \
+	Signal/General/SKMasker.o \
+	Signal/General/SingleThread.o \
+	Signal/General/MultiThread.o \
+	Signal/General/dsp_verbosity.o \
+	Signal/General/PolnSelect.o \
+	Signal/General/PolnReshape.o \
+	Signal/General/ExcisionStatsPlotter.o \
+	Signal/General/BitStatsPlotter.o
+
+OBJFILES += Signal/Statistics/PearsonIV.o \
+	Signal/Statistics/SKLimits.o
+
+OBJFILES += Signal/Pulsar/dspsr.o
+
+
+####################################################################################################
+
+
+all: dspsr
+
+dspsr: $(OBJFILES)
+	g++ $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+%.o: %.c $(ALL_HEADERS)
+	gcc $(CFLAGS) -o $@ -c $<
+
+%.o: %.C $(ALL_HEADERS)
+	g++ $(CFLAGS) -o $@ -c $<
+
+clean:
+	rm -f dspsr $(OBJFILES)
