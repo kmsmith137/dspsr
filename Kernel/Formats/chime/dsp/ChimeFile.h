@@ -20,8 +20,10 @@ namespace dsp {
     ChimeFile();
     virtual ~ChimeFile();
 	  
-    virtual bool is_valid(const char* filename) const;
-    virtual void open_file(const char* filename);
+    // All of these are overrides of File virtuals.
+    virtual bool is_valid(const char* filelist_filename) const;
+    virtual void open_file(const char* filelist_filename);
+    virtual void set_total_samples();
 
   protected:
     ch_vdif_assembler::dspsr_handle *assembler_handle;

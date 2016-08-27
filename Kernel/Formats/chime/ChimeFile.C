@@ -10,10 +10,20 @@
 
 using namespace std;
 
+inline bool endswith(const std::string &str, const std::string &suffix)
+{
+  return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
+
+// -------------------------------------------------------------------------------------------------
+
+
 dsp::ChimeFile::ChimeFile() : File("CHIME") 
 { 
   this->assembler_handle = 0;
 }
+
 
 dsp::ChimeFile::~ChimeFile() 
 { 
@@ -23,18 +33,35 @@ dsp::ChimeFile::~ChimeFile()
   }
 }
 
-bool dsp::ChimeFile::is_valid(const char *filename) const
+
+bool dsp::ChimeFile::is_valid(const char *filelist_filename) const
 {
-  cerr << "is_valid called: " << filename << endl;
-  return true;
+  if (endswith(filelist_filename, ".txt"))
+    return true;
+
+  std::cerr << "warning: filelist_filename '" << filelist_filename << "' doesn't end in .txt, this is not a valid chime filelist_filename\n";
+  return false;
 }
 
-void dsp::ChimeFile::open_file(const char *filename)
+
+void dsp::ChimeFile::open_file(const char *filelist_filename)
 {
-  this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filename);
-  cerr << "file opened! " << filename <<endl;
-  throw runtime_error("BLAH");
+  if (assembler_handle)
+    throw runtime_error("internal error: ChimeFile:open_file() was called twice?!");
+
+  this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filelist_filename);
+  cerr << "assembler_handle constructed! " << filelist_filename <<endl;
 }
+
+
+// Overrides File::set_total_samples().  We have no way of determining the sample count
+// in advance, so we just don't initialize it.  I think this is OK, since class DADABuffer
+// does the same thing.
+void dsp::ChimeFile::set_total_samples()
+{
+  return;
+}
+
 
 /*
  * Local variables:
