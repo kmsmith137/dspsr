@@ -5,8 +5,10 @@
  *
  ***************************************************************************/
 
+#include <cstring>
 #include <stdexcept>
 #include "dsp/ChimeFile.h"
+#include "dsp/BitSeries.h"
 
 using namespace std;
 
@@ -42,6 +44,7 @@ dsp::ChimeFile::ChimeFile() : File("CHIME")
   obs->set_npol(2);
   obs->set_nbit(4);
   obs->set_telescope("CHIME");
+  obs->set_machine("CHIME");
   obs->set_centre_frequency(600.);   // MHz
   obs->set_rate(ch_vdif_assembler::dspsr_handle::sampling_rate_Hz);
 
@@ -49,13 +52,18 @@ dsp::ChimeFile::ChimeFile() : File("CHIME")
   obs->set_bandwidth(400.);   // "negative = lsb; positive = usb"
   obs->set_swap(true);        // "set true if frequency channels are out of order"
 
-  //
+  // The stream size is not known in advance, so let's try a hack: as data arrives,
+  // we call Observation::set_ndat() to keep the stream size equal to the amount of
+  // data processed so far, plus one chunk.  (See ChimeFile::load_data() below.)
+  obs->set_ndat(ch_vdif_assembler::dspsr_handle::nt_chunk);
+
+  // This must come after the call to Observation::set_ndat().
+  this->set_block_size(ch_vdif_assembler::dspsr_handle::nt_chunk);
+
   // Note: the following members of class Observation are not initialized.
-  //   - ndat, since there is no way to set it for a real-time stream
   //   - source, dispersion_measure, rotation_measure
   //   - coordinates, start_time
   //   - a bunch of strings which didn't seem important (receiver, identifier, etc.)
-  //
 }
 
 
@@ -81,7 +89,7 @@ bool dsp::ChimeFile::is_valid(const char *filelist_filename) const
 void dsp::ChimeFile::open(const char *filelist_filename)
 {
   if (assembler_handle)
-    throw runtime_error("internal error: ChimeFile:open() was called twice?!");
+    throw runtime_error("ChimeFile:open() was called twice?!");
 
   this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filelist_filename);
 }
@@ -89,25 +97,55 @@ void dsp::ChimeFile::open(const char *filelist_filename)
 
 void dsp::ChimeFile::close()
 {
-  throw runtime_error("ChimeFile: File::close() called");
+  if (!assembler_handle)
+    throw runtime_error("ChimeFile::close() was called twice (or open() was never called)");
+
+  delete assembler_handle;
+  this->assembler_handle = 0;
 }
 
 
 bool dsp::ChimeFile::eod()
 {
-  throw runtime_error("ChimeFile: Input::eod() called");
+  if (!assembler_handle)
+    throw runtime_error("ChimeFile::eod() was called after close() (or open() was never called)");
+
+  return (assembler_handle->curr_chunk_ix >= 0) && (assembler_handle->curr_data == NULL);
 }
 
 
 void dsp::ChimeFile::load_data(BitSeries *data)
 {
-  throw runtime_error("ChimeFile: Input::load_data() called");
-}
+  uint64_t chunk_nbytes = 2 * ch_vdif_assembler::dspsr_handle::nfreq * ch_vdif_assembler::dspsr_handle::nt_chunk;
 
+  if (!assembler_handle)
+    throw runtime_error("ChimeFile::load_data() was called after close() (or open() was never called)");
 
-void dsp::ChimeFile::seek(int64_t offset, int whence)
-{
-  throw runtime_error("ChimeFile: Input::seek() called");
+  if (assembler_handle->curr_chunk_ix < 0)
+    assembler_handle->advance();  // start stream and read first chunk
+
+  if ((int64_t)get_load_sample() != assembler_handle->curr_chunk_ix * ch_vdif_assembler::dspsr_handle::nt_chunk)
+    throw runtime_error("ChimeFile::load_data() was called with unexpected value of load_sample");
+  if ((int64_t)get_load_size() != ch_vdif_assembler::dspsr_handle::nt_chunk)
+    throw runtime_error("ChimeFile::load_data() was called with unexpected value of load_size");
+  if (assembler_handle->curr_data == NULL)
+    throw runtime_error("ChimeFile::load_data() was called after end-of-stream");
+
+  // Some checks on the BitSeries.
+  if ((data->get_nchan() != (unsigned)ch_vdif_assembler::dspsr_handle::nfreq) || (data->get_npol() != 2) || (data->get_ndim() != 2) || (data->get_nbit() != 4) || !data->get_rawptr())
+    throw runtime_error("ChimeFile::load_data(): BitSeries failed sanity test");
+  if (data->get_size() < chunk_nbytes)
+    throw runtime_error("ChimeFile::load_data(): BitSeries is underallocated");    
+
+  // We just copy the data without reordering or reformatting.
+  memcpy(data->get_rawptr(), assembler_handle->curr_data, chunk_nbytes);
+  data->set_ndat(ch_vdif_assembler::dspsr_handle::nt_chunk);
+
+  // Advance to next chunk.
+  assembler_handle->advance();
+
+  if (assembler_handle->curr_data != NULL)
+    get_info()->set_ndat((assembler_handle->curr_chunk_ix+1) * ch_vdif_assembler::dspsr_handle::nt_chunk);
 }
 
 
@@ -121,7 +159,7 @@ void dsp::ChimeFile::copy(const Input *input)
 
 void dsp::ChimeFile::seek(MJD mjd)
 {
-  throw runtime_error("ChimeFile: Input::seek() called");
+  throw runtime_error("ChimeFile: Input::seek(MJD) called");
 }
 
 void dsp::ChimeFile::rewind()

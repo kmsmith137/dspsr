@@ -28,9 +28,9 @@ namespace dsp {
     // Input virtuals.
     virtual bool eod();
     virtual void load_data(BitSeries *data);
-    virtual void seek(int64_t offset, int whence=0);
     
     // Here is a list of Input virtuals which we don't override, since the default implementations seem OK.
+    //   seek(): can't actually override this, since 'load_sample' is a private (not protected) member of class Input
     //   get_output(), set_output(), has_output()
     //   get_block_size(), set_block_size()
     //   get_overlap(), set_overlap(), get_stride()
