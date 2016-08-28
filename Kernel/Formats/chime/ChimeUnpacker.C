@@ -5,8 +5,10 @@
  *
  ***************************************************************************/
 
-#include "dsp/ChimeUnpacker.h"
+#include <stdexcept>
 #include <ch_vdif_assembler_dspsr.hpp>
+
+#include "dsp/ChimeUnpacker.h"
 
 using namespace std;
 

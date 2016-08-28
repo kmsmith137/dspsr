@@ -101,6 +101,7 @@ ALL_HEADERS = Kernel/Classes/ascii_header.h \
 	Kernel/Classes/dsp/infodata.h \
 	Kernel/Classes/environ.h \
 	Kernel/Formats/chime/dsp/ChimeFile.h \
+	Kernel/Formats/chime/dsp/ChimeUnpacker.h \
 	Kernel/Formats/dada/dsp/DADABuffer.h \
 	Kernel/Formats/guppi/dsp/GUPPIBlockFile.h \
 	Kernel/Formats/guppi/dsp/GUPPIBuffer.h \
@@ -277,7 +278,8 @@ OBJFILES = Kernel/Classes/ASCIIObservation.o \
 OBJFILES += Kernel/Formats/File_registry.o \
 	Kernel/Formats/Unpacker_registry.o 
 
-OBJFILES += Kernel/Formats/chime/ChimeFile.o
+OBJFILES += Kernel/Formats/chime/ChimeFile.o \
+	Kernel/Formats/chime/ChimeUnpacker.o
 
 # OBJFILES += Kernel/Formats/guppi/GUPPIBlockFile.o \
 #	Kernel/Formats/guppi/GUPPIFile.o \

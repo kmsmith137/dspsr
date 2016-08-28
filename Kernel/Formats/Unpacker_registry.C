@@ -60,7 +60,7 @@ static dsp::Unpacker::Register::Enter<dsp::BPSRCrossUnpacker> bpsrcross;
 static dsp::Unpacker::Register::Enter<dsp::CASPSRUnpacker> caspsr;
 #endif
 
-#if HAVE_caspsr
+#if HAVE_chime
 #include "dsp/ChimeUnpacker.h"
 static dsp::Unpacker::Register::Enter<dsp::ChimeUnpacker> chime;
 #endif
