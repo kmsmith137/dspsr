@@ -20,7 +20,7 @@ namespace dsp {
     ChimeFile();
     virtual ~ChimeFile();
 	  
-    // All of these are overrides of File virtuals.
+    // All of these are overrides of virtual functions in base classes.
     virtual bool is_valid(const char* filelist_filename) const;
     virtual void open_file(const char* filelist_filename);
     virtual void set_total_samples();
@@ -28,7 +28,6 @@ namespace dsp {
   protected:
     ch_vdif_assembler::dspsr_handle *assembler_handle;
   };
-
 }
 
 #endif // !defined(__ChimeFile_h)

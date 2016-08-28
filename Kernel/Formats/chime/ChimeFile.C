@@ -22,7 +22,42 @@ inline bool endswith(const std::string &str, const std::string &suffix)
 dsp::ChimeFile::ChimeFile() : File("CHIME") 
 { 
   this->assembler_handle = 0;
+  
+  Observation *obs = this->get_info();
+  
+  // Linear polarization (see chimer:/usr/local/include/Basis.h)
+  obs->set_basis(Signal::Linear);
+
+  // I'm not sure if this is correct!
+  // "In-phase and Quadrature sampled voltages" (see chimer:/usr/local/include/Types.h)
+  obs->set_state(Signal::Analytic);
+  
+  // The other plausible option here is Signal::Unknown (see chimer:/usr/local/include/Types.h)
+  obs->set_type(Signal::Pulsar);
+
+  // The "2" here means { real, complex }.
+  obs->set_ndim(2);
+
+  obs->set_nchan(ch_vdif_assembler::dspsr_handle::get_nchan());
+  obs->set_npol(2);
+  obs->set_nbit(4);
+  obs->set_telescope("CHIME");
+  obs->set_centre_frequency(600.);   // MHz
+  obs->set_rate(ch_vdif_assembler::dspsr_handle::get_rate());
+
+  // I'm not sure if these values are correct!
+  obs->set_bandwidth(400.);   // "negative = lsb; positive = usb"
+  obs->set_swap(true);        // "set true if frequency channels are out of order"
+
+  //
+  // Note: the following members of class Observation are not initialized.
+  //   - ndat, since there is no way to set it for a real-time stream
+  //   - source, dispersion_measure, rotation_measure
+  //   - coordinates, start_time
+  //   - a bunch of strings which didn't seem important (receiver, identifier, etc.)
+  //
 }
+
 
 
 dsp::ChimeFile::~ChimeFile() 
@@ -50,7 +85,6 @@ void dsp::ChimeFile::open_file(const char *filelist_filename)
     throw runtime_error("internal error: ChimeFile:open_file() was called twice?!");
 
   this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filelist_filename);
-  cerr << "assembler_handle constructed! " << filelist_filename <<endl;
 }
 
 
