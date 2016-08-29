@@ -58,11 +58,13 @@ void dsp::ChimeUnpacker::unpack()
       // FIXME should write assembly language kernel in ch_vdif_assembler_kernels.hpp
       for (int i = 0; i < ch_vdif_assembler::dspsr_handle::nt_chunk; i++) {
 	if (src[i] == 0) {
-	  // invalid entry
+	  // Invalid entry.
+	  // FIXME is there a better approach than zeroing the buffer?  I didn't see a 'mask' or
+	  // 'weights' array in TimeSeries or its subclasses.
 	  dst[2*i] = dst[2*i+1] = 0.0;
 	}
 	else {
-	  // offset decode
+	  // Offset decode
 	  dst[2*i] = (float)((src[i] & 0xf0) >> 4) - 8.0;
 	  dst[2*i+1] = (float)(src[i] & 0x0f) - 8.0;
 	}
