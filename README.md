@@ -43,6 +43,11 @@ The following works for me on chimer, but note that some prerequisites have alre
   - Right now the code is CPU-only, need to figure out how to put the BitSeries in GPU memory
     and run the Unpacker on the GPU.
 
+  - Right now we can't run on a realtime network stream, only a disk capture.  (The realtime case
+    is implemented in the ch_vdif_assembler library, and very little code is required on the dspsr
+    side, but I'm guessing that won't actually be able to keep up with the realtime data until
+    GPU processing is implemented.)
+
   - Right now we don't have real timestamp info, this will undoubtedly be an issue soon.
 
   - Autoconf loose end: libch_frb_io should be an optional prerequisite
