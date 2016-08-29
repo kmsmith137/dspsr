@@ -14,6 +14,10 @@
 
 namespace dsp {
 
+  // Note: we use a subclass of File, even though a subclass of Input would make more sense.
+  // This is so we can add ChimeFile to the File registry, and access it through the usual dspsr
+  // command-line syntax (a similar kludge is used in e.g. class DADABuffer).
+
   class ChimeFile : public File
   {
   public:
@@ -28,7 +32,8 @@ namespace dsp {
     // Input virtuals.
     virtual bool eod();
     virtual void load_data(BitSeries *data);
-    
+
+    //
     // Here is a list of Input virtuals which we don't override, since the default implementations seem OK.
     //   seek(): can't actually override this, since 'load_sample' is a private (not protected) member of class Input
     //   get_output(), set_output(), has_output()
@@ -38,7 +43,11 @@ namespace dsp {
     //   operation()
     //   mark_output()
 
-    // Input virtuals which currently throw exceptions.
+    // 
+    // Everything after this point is a "non-virtual": a virtual function which has been overridden to
+    // throw an exception.  This is because according to my understanding none of these functions should
+    // ever be called, so I like having the exception as a signal to revisit and understand things.
+    //
     virtual void copy(const Input *input);
     virtual void seek(MJD mjd);
 

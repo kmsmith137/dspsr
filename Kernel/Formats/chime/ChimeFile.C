@@ -137,7 +137,7 @@ void dsp::ChimeFile::load_data(BitSeries *data)
   if (data->get_size() < chunk_nbytes)
     throw Error(InvalidState, "ChimeFile::load_data", "BitSeries is underallocated");    
 
-  // We just copy the data without reordering or reformatting.
+  // Just copy the data here -- reordering and unpacking to float is done in ChimeUnpacker.
   memcpy(data->get_rawptr(), assembler_handle->curr_data, chunk_nbytes);
   data->set_ndat(ch_vdif_assembler::dspsr_handle::nt_chunk);
 
@@ -150,6 +150,8 @@ void dsp::ChimeFile::load_data(BitSeries *data)
 
 
 // -------------------------------------------------------------------------------------------------
+//
+// Long list of "non-virtuals" (see comment in ChimeFile.h)
 
 
 void dsp::ChimeFile::copy(const Input *input)
