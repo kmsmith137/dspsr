@@ -89,7 +89,7 @@ bool dsp::ChimeFile::is_valid(const char *filelist_filename) const
 void dsp::ChimeFile::open(const char *filelist_filename)
 {
   if (assembler_handle)
-    throw runtime_error("ChimeFile:open() was called twice?!");
+    throw Error(InvalidState, "ChimeFile::open", "stream already open");
 
   this->assembler_handle = ch_vdif_assembler::dspsr_handle::make(filelist_filename);
 }
@@ -98,7 +98,7 @@ void dsp::ChimeFile::open(const char *filelist_filename)
 void dsp::ChimeFile::close()
 {
   if (!assembler_handle)
-    throw runtime_error("ChimeFile::close() was called twice (or open() was never called)");
+    throw Error(InvalidState, "ChimeFile::close", "stream already closed (or never opened)");
 
   delete assembler_handle;
   this->assembler_handle = 0;
@@ -108,7 +108,7 @@ void dsp::ChimeFile::close()
 bool dsp::ChimeFile::eod()
 {
   if (!assembler_handle)
-    throw runtime_error("ChimeFile::eod() was called after close() (or open() was never called)");
+    throw Error(InvalidState, "ChimeFile::eod", "stream closed, or never opened");
 
   return (assembler_handle->curr_chunk_ix >= 0) && (assembler_handle->curr_data == NULL);
 }
@@ -119,23 +119,23 @@ void dsp::ChimeFile::load_data(BitSeries *data)
   uint64_t chunk_nbytes = 2 * ch_vdif_assembler::dspsr_handle::nfreq * ch_vdif_assembler::dspsr_handle::nt_chunk;
 
   if (!assembler_handle)
-    throw runtime_error("ChimeFile::load_data() was called after close() (or open() was never called)");
+    throw Error(InvalidState, "ChimeFile::load_data", "stream closed, or never opened");
 
   if (assembler_handle->curr_chunk_ix < 0)
     assembler_handle->advance();  // start stream and read first chunk
 
   if ((int64_t)get_load_sample() != assembler_handle->curr_chunk_ix * ch_vdif_assembler::dspsr_handle::nt_chunk)
-    throw runtime_error("ChimeFile::load_data() was called with unexpected value of load_sample");
+    throw Error(InvalidParam, "ChimeFile::load_data", "unexpected value of load_sample");
   if ((int64_t)get_load_size() != ch_vdif_assembler::dspsr_handle::nt_chunk)
-    throw runtime_error("ChimeFile::load_data() was called with unexpected value of load_size");
+    throw Error(InvalidParam, "ChimeFile::load_data", "unexpected value of load_size");
   if (assembler_handle->curr_data == NULL)
-    throw runtime_error("ChimeFile::load_data() was called after end-of-stream");
+    throw Error(InvalidState, "ChimeFile::load_data", "called at end-of-stream");
 
   // Some checks on the BitSeries.
   if ((data->get_nchan() != (unsigned)ch_vdif_assembler::dspsr_handle::nfreq) || (data->get_npol() != 2) || (data->get_ndim() != 2) || (data->get_nbit() != 4) || !data->get_rawptr())
-    throw runtime_error("ChimeFile::load_data(): BitSeries failed sanity test");
+    throw Error(InvalidState, "ChimeFile::load_data", "BitSeries failed sanity test");
   if (data->get_size() < chunk_nbytes)
-    throw runtime_error("ChimeFile::load_data(): BitSeries is underallocated");    
+    throw Error(InvalidState, "ChimeFile::load_data", "BitSeries is underallocated");    
 
   // We just copy the data without reordering or reformatting.
   memcpy(data->get_rawptr(), assembler_handle->curr_data, chunk_nbytes);
@@ -154,72 +154,72 @@ void dsp::ChimeFile::load_data(BitSeries *data)
 
 void dsp::ChimeFile::copy(const Input *input)
 {
-  throw runtime_error("ChimeFile: Input::copy() called");
+  throw Error(InvalidState, "Chimefile::copy", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::seek(MJD mjd)
 {
-  throw runtime_error("ChimeFile: Input::seek(MJD) called");
+  throw Error(InvalidState, "Chimefile::seek(MJD)", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::rewind()
 {
-  throw runtime_error("ChimeFile: Seekable::rewind() called");
+  throw Error(InvalidState, "ChimeFile::rewind", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::set_eod(bool eod)
 {
-  throw runtime_error("ChimeFile: Seekable::set_eod() called");
+  throw Error(InvalidState, "ChimeFile::set_eod", "virtual function not implemented, see ChimeFile.C");
 }
 
 int64_t dsp::ChimeFile::load_bytes(unsigned char* buffer, uint64_t bytes)
 {
-  throw runtime_error("ChimeFile: Seekable::load_bytes() called");
+  throw Error(InvalidState, "ChimeFile::load_bytes", "virtual function not implemented, see ChimeFile.C");
 }
 
 int64_t dsp::ChimeFile::seek_bytes(uint64_t bytes)
 {
-  throw runtime_error("ChimeFile: Seekable::seek_bytes() called");
+  throw Error(InvalidState, "ChimeFile::seek_bytes", "virtual function not implemented, see ChimeFile.C");
 }
 
 uint64_t dsp::ChimeFile::recycle_data(BitSeries* data)
 {
-  throw runtime_error("ChimeFile: Seekable::recycle_data() called");
+  throw Error(InvalidState, "ChimeFile::recycle_data", "virtual function not implemented, see ChimeFile.C");
 }
 
 uint64_t dsp::ChimeFile::get_current_sample()
 {
-  throw runtime_error("ChimeFile: Seekable::get_current_sample() called");
+  throw Error(InvalidState, "ChimeFile::get_current_sample", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::reopen()
 {
-  throw runtime_error("ChimeFile: File::reopen() called");
+  throw Error(InvalidState, "ChimeFile::reopen", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::open_file(const char *filelist_filename)
 {
-  throw runtime_error("ChimeFile: File::open_file() called");
+  throw Error(InvalidState, "ChimeFile::open_file", "virtual function not implemented, see ChimeFile.C");
 }
 
 int64_t dsp::ChimeFile::fstat_file_ndat(uint64_t tailer_bytes)
 {
-  throw runtime_error("ChimeFile: File::fstat_file_ndat() called");
+  throw Error(InvalidState, "ChimeFile::fstat_file_ndat", "virtual function not implemented, see ChimeFile.C");
 }
 
 int64_t dsp::ChimeFile::pad_bytes(unsigned char *buffer, int64_t bytes)
 {
-  throw runtime_error("ChimeFile: File::pad_bytes() called");
+  throw Error(InvalidState, "ChimeFile::pad_bytes", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::set_total_samples()
 {
-  throw runtime_error("ChimeFile: File::set_total_samples() called");
+  throw Error(InvalidState, "ChimeFile::set_total_samples", "virtual function not implemented, see ChimeFile.C");
 }
 
 void dsp::ChimeFile::open_fd(const string &filename)
 {
-  throw runtime_error("ChimeFile: File::open_fd() called");
+  throw Error(InvalidState, "ChimeFile::open_fd", "virtual function not implemented, see ChimeFile.C");
 }
 
 

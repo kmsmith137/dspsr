@@ -24,28 +24,28 @@ void dsp::ChimeUnpacker::unpack()
   // Sanity checks on input
 
   if (input->get_nchan() != (unsigned)ch_vdif_assembler::dspsr_handle::nfreq)
-    throw runtime_error("ChimeUnpacker: unexpected value of input->nchan");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of input->nchan");
   if (input->get_npol() != 2)
-    throw runtime_error("ChimeUnpacker: unexpected value of input->npol");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of input->npol");
   if (input->get_ndim() != 2)
-    throw runtime_error("ChimeUnpacker: unexpected value of input->ndim");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of input->ndim");
   if (input->get_ndat() != (unsigned)ch_vdif_assembler::dspsr_handle::nt_chunk)
-    throw runtime_error("ChimeUnpacker: unexpected value of input->ndat");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of input->ndat");
   if (input->get_nbit() != 4)
-    throw runtime_error("ChimeUnpacker: unexpected value of input->nbit");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of input->nbit");
 
   // Sanity checks on output
 
   if (output->get_order() != TimeSeries::OrderFPT)
-    throw runtime_error("ChimeUnpacker: unexpected value of output->order");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of output->order");
   if (output->get_nchan() != (unsigned)ch_vdif_assembler::dspsr_handle::nfreq)
-    throw runtime_error("ChimeUnpacker: unexpected value of output->nchan");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of output->nchan");
   if (output->get_npol() != 2)
-    throw runtime_error("ChimeUnpacker: unexpected value of output->npol");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of output->npol");
   if (output->get_ndim() != 2)
-    throw runtime_error("ChimeUnpacker: unexpected value of output->ndim");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of output->ndim");
   if (output->get_ndat() != (unsigned)ch_vdif_assembler::dspsr_handle::nt_chunk)
-    throw runtime_error("ChimeUnpacker: unexpected value of output->ndat");
+    throw Error(InvalidParam, "ChimeUnpacker::unpack", "unexpected value of output->ndat");
 
   // Unpack logic.  Conveniently, ch_vdif_assembler keeps the data in the same
   // (freq, pol, time, dim) order as dspsr.
